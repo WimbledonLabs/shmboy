@@ -1,7 +1,10 @@
 #include "main.h"
 #include <iostream>
 
+#include "cpu.h"
+
 int main(int argc, char **argv) {
-    std::cout << "Hello World!" << std::endl;
+    Cpu cpu;
+    std::cout << "Hello World! " << cpu.pc << std::endl;
     return 0;
 }

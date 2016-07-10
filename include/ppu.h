@@ -1,73 +1,72 @@
+#ifndef PPU_H
+#define PPU_H
+
 #include "shmboy_common.h"
-
-// DMG -> monochrome gameboy
-// CGB -> color game boy
-
-// DMG/CGB LCD display registers occupy memory locations FF40 to FF4B
-// The following are the offset from FF40 fo each of the LCD registers
-#define LCDC_OS 0
-#define STAT_OS 1
-#define SCY_OS  2
-#define SCX_OS  3
-#define LY_OS   4
-#define LYC_OS  5
-#define DMA_OS  6
-#define BGP_OS  7
-#define OBP0_OS 8
-#define OBP1_OS 9
-#define WY_OS 0xA
-#define WX_OS 0xB
-
-// CGB LCD register offsets from FF51
-#define HDMA1_OS 0x1
-#define HDMA2_OS 0x2
-#define HDMA3_OS 0x3
-#define HDMA4_OS 0x4
-#define HDMA5_OS 0x5
-#define BCPS_OS  0x18
-#define BCPD_OS  0x19
-#define OCPS_OS  0x1A
-#define OCPD_OS  0x1B
+#include "gb_registers.h"
+#include "cpu.h"
 
 #define SCREEN_WIDTH 160
 #define SCREEN_HEIGHT 144
-#define BG_WIDTH 255
-#define BG_HEIGHT 255
-#define BG_TILE_WIDTH 32
-#define BG_TILE_HEIGHT 32
+#define BG_DOT_WIDTH 255
+#define BG_DOT_HEIGHT 255
+#define BG_TILE_COUNT_WIDTH 32
+#define BG_TILE_COUNT_HEIGHT 32
 #define MAX_OBJ_COUNT 40
+
+#define NUM_PALETTES 8
+#define COLORS_PER_PALETTE 4
 
 #define EIGHT_BY_SIXTEEN_MODE 0 // TODO implement
 
-#define OBJ_CHR_DATA_OS 0x0000
-#define BG_CHR_DATA_OS  0x1000
-#define BG_DISPLAY_1_DATA_OS 0x1800
-#define BG_DISPLAY_2_DATA_OS 0x1C00
+// Forward declarations
+class Cpu;
+class GbMemory;
+
+typedef union {
+    u8 value;
+    struct {
+        unsigned int palette: 3;
+        unsigned int bank: 1;
+        unsigned int: 1;
+        unsigned int ewFlip: 1;
+        unsigned int nsFlip: 1;
+        unsigned int priority: 1;
+    };
+} BGDisplayAttr;
 
 typedef struct {
     u8 x;
     u8 y;
     u8 code;
-    u8 attr;
+    u8 att;
 } ChrData;
 
-class PPU {
-    PPU(Core core,
-        u8 *OAM,   //
-        u8 *bank0, // 0x8000 bank 0
-        u8 *bank1, // 0x8000 bank 1
-        u8 *vbk,   // ptr to bank select register
-        u8 *svbk,  // ptr to thr other bank select register?
-        bool isCgb);
+class Ppu {
+public:
+    Ppu(Cpu      *cpu,
+        GbMemory *mem);
+
+    ~Ppu();
+
+    Cpu *cpu;
+    GbMemory *mem;
+
+    u8 *bank0;
+    u8 *bank1;
+
+    void setMode(GbMode);
+
     void update(int clockCycles);
     u32 *getPixelBuffer();
 
+    u32 bgTileColor(u8 chrCode, u8 tX, u8 tY, BGDisplayAttr attr);
     void swapBuffers();
 
-    u32 *bgWriteBuffer;
+    u32 colorPalette[NUM_PALETTES][COLORS_PER_PALETTE];
 
-    u32 *writeBuffer;
-    u32 *readBuffer;
+    u32 bgWriteBuffer[BG_DOT_WIDTH * BG_DOT_HEIGHT];
+    u32 writeBuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
+    u32 readBuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
 
     bool hBlank;
     bool vBlank;
@@ -75,4 +74,29 @@ class PPU {
     bool bufferChanged;
 
     GbMode mode;
-}
+
+    void blit(void *src, void *dest, 
+               int srcx, int srcy,
+               int destx, int desty);
+
+    void drawBgLayer(u32 *layer, bool window);
+    void drawObjLayer(u32 *layer);
+
+
+
+
+u32 getPixelData(ChrData chr, int x, int y);
+
+void drawPixel(int x, int y);
+void drawBackground();
+
+u32 ordinalColor(u8 pixel, u8 palette);
+ChrData getChrData(u8 objNum);
+u32 getBGPixel(int x, int y);
+u32 getPixelColor(ChrData chr, int x, int y);
+
+
+
+};
+
+#endif // PPU_H
