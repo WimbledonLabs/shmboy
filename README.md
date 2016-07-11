@@ -1,2 +1,2 @@
-# C++ Project Template
-Basic project template for C++ created by Stephen Molyneaux.
+# SHMBoy Game Boy Color Emulator
+A Game Boy Color emulator written by Stephen Molyneaux. Currently in development.
