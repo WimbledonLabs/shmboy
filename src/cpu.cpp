@@ -56,3 +56,11 @@ Cpu::Cpu() {
 Cpu::~Cpu() {
     delete ppu;
 }
+
+OpCode Cpu::fetch(int pc) {
+
+}
+
+void Cpu::execute(OpCode op) {
+#include "gb_decode_switch.c"
+}

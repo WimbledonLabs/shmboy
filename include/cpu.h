@@ -4,6 +4,18 @@
 #include "shmboy_common.h"
 #include "ppu.h"
 
+#define REGISTER_COUNT 8
+
+#define REG_A 7
+#define REG_B 0
+#define REG_C 1
+#define REG_D 5 // Multiple 5's ...?
+#define REG_E 3
+#define REG_H 4
+#define REG_L 5
+
+#define REG_HL
+
 // Forward declarations
 class Ppu;
 
@@ -20,8 +32,10 @@ public:
 
 class Cpu {
 public:
-    int sp;
-    int pc;
+    u16 sp;
+    u16 pc;
+
+    u8 reg[REGISTER_COUNT];
 
     GbMemory mem;
     Ppu *ppu;
