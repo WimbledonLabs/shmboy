@@ -62,5 +62,5 @@ OpCode Cpu::fetch(int pc) {
 }
 
 void Cpu::execute(OpCode op) {
-#include "gb_decode_switch.c"
+//TODO #include "gb_decode_switch.c"
 }

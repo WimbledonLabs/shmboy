@@ -20,9 +20,20 @@ def match(ref, test):
     return True
 
 def genCode(tree):
-    values = [leftPad(hex(a)[2:], "0", 2) for a in range(256) if match(tree.replace(" ", ""), leftPad(bin(a)[2:], "0", 8))]
-    assert values, "No binary string can be decoded with %s, probably the error in this program" % tree
-    return "//" + opCodes[tree][0] + " 0x" + ", 0x".join(values) + "\n" + "\n".join( [microOpCode[x] for x in range(3, len(microOps)) if opCodes[tree][1][x]] )
+    # Find all hex codes which map to this instruction
+    binString = tree.replace(" ", "")
+    allBinStrings = [ (bin(a)[2:]).zfill(8) for a in range(256) ]
+    hexValues = [ "0x%02x" % int(a, 2) for a in allBinStrings if match(binString, a) ]
+
+    # Get all of the micro code operations which are needed for this instruction
+    leafMicroOps = [microOpCode[x] for x in range(len(microOps)) if opCodes[tree][1][x]];
+
+    # Get the Mnemonic which corresponds to this instruction
+    opCodeMnemonic = opCodes[tree][0]
+    assert hexValues, "No binary string can be decoded with %s, probably the error in this program" % tree
+    return "//%s %s%s" % ( opCodeMnemonic,
+                               ", ".join(hexValues),
+                               "\n" + "\n".join(leafMicroOps) )
 
 def genDisassemble(tree):
     d = {
