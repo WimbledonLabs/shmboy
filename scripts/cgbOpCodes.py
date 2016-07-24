@@ -8,8 +8,21 @@ branches = set("01")
 wildcard = "XDFRArNd*"
 ignore = " ,'"
 
+def leftPad(s, c, size):
+    return (c*(size-len(s))+s)[:size]
+
+def match(ref, test):
+    assert len(ref) == len(test), "%s is not the same size as %s" % (ref, test)
+    for i in range(len(ref)):
+        if ref[i] != test[i] and ref[i] != "*":
+            return False
+
+    return True
+
 def genCode(tree):
-    return "//" + opCodes[tree][0] + "\n" + "\n".join( [microOpCode[x] for x in range(3, len(microOps)) if opCodes[tree][1][x]] )
+    values = [leftPad(hex(a)[2:], "0", 2) for a in range(256) if match(tree.replace(" ", ""), leftPad(bin(a)[2:], "0", 8))]
+    assert values, "No binary string can be decoded with %s, probably the error in this program" % tree
+    return "//" + opCodes[tree][0] + " 0x" + ", 0x".join(values) + "\n" + "\n".join( [microOpCode[x] for x in range(3, len(microOps)) if opCodes[tree][1][x]] )
 
 def genDisassemble(tree):
     d = {
