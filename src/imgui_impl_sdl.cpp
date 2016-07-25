@@ -11,6 +11,7 @@
 #include <SDL2/SDL_opengl.h>
 #include <imgui.h>
 #include "imgui_impl_sdl.h"
+#include <iostream>
 
 // Data
 static double       g_Time = 0.0f;

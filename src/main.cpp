@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
+#include <iostream>
+
+#include "shm_emu_io.h"
 
 int main(int, char**)
 {
@@ -24,25 +27,37 @@ int main(int, char**)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
     SDL_DisplayMode current;
     SDL_GetCurrentDisplayMode(0, &current);
-    SDL_Window *window = SDL_CreateWindow("ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+    SDL_Window *window = SDL_CreateWindow("Shmboy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
     SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 
     // Setup ImGui binding
     ImGui_ImplSdl_Init(window);
 
-    // Load Fonts
-    // (there is a default font, this is only if you want to change it. see extra_fonts/README.txt for more details)
-    //ImGuiIO& io = ImGui::GetIO();
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("../../extra_fonts/Cousine-Regular.ttf", 15.0f);
-    //io.Fonts->AddFontFromFileTTF("../../extra_fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../extra_fonts/ProggyClean.ttf", 13.0f);
-    //io.Fonts->AddFontFromFileTTF("../../extra_fonts/ProggyTiny.ttf", 10.0f);
-    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-
     bool show_test_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImColor(114, 144, 154);
+
+    //Screen lcd(255, 255);
+    SDL_Surface* logo = SDL_LoadBMP("logo.bmp");
+    if (logo == nullptr) {
+        std::cout << "Could not load logo :(" << std::endl;
+        std::cout << SDL_GetError() << std::endl;
+        exit(-1);
+    }
+
+    GLuint logoTextureId = 0;
+
+    glGenTextures(1, &logoTextureId);
+    glBindTexture(GL_TEXTURE_2D, logoTextureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                 logo->w, logo->h,0, 
+                 GL_RGB, GL_UNSIGNED_BYTE, 
+                 logo->pixels);
+
+    int scale = 2;
 
     // Main loop
     bool done = false;
@@ -61,20 +76,57 @@ int main(int, char**)
         // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
         {
             static float f = 0.0f;
-            ImGui::Text("Hello, world!");
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Text("Game Boy Screen Scale");
+            ImGui::RadioButton("x1", &scale, 1); ImGui::SameLine();
+            ImGui::RadioButton("x2", &scale, 2); ImGui::SameLine();
+            ImGui::RadioButton("x3", &scale, 3); ImGui::SameLine();
+            ImGui::RadioButton("x4", &scale, 4);
+
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
             ImGui::ColorEdit3("clear color", (float*)&clear_color);
             if (ImGui::Button("Test Window")) show_test_window ^= 1;
             if (ImGui::Button("Another Window")) show_another_window ^= 1;
-            ImGui::Text("This is a modApplication average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        }
+
+        {
+            ImGui::SetNextWindowSize(ImVec2(450,300), ImGuiSetCond_FirstUseEver);
+            ImGui::Begin("Disassembly", nullptr);
+            ImGui::Columns(3, "mycolumns3", true); // 3 columns, no border
+            ImGui::Separator();
+            ImGui::Text("One"); ImGui::NextColumn();
+            ImGui::Text("2"); ImGui::NextColumn();
+            ImGui::Text("3"); ImGui::NextColumn();
+            ImGui::Text("4"); ImGui::NextColumn();
+            ImGui::Text("5"); ImGui::NextColumn();
+            ImGui::Text("6"); ImGui::NextColumn();
+            ImGui::Text("7"); ImGui::NextColumn();
+            ImGui::Text("8"); ImGui::NextColumn();
+            ImGui::Text("9"); ImGui::NextColumn();
+            ImGui::Text("10"); ImGui::NextColumn();
+            ImGui::Text("11"); ImGui::NextColumn();
+            ImGui::Text("12"); ImGui::NextColumn();
+            ImGui::Text("13"); ImGui::NextColumn();
+            ImGui::Text("14"); ImGui::NextColumn();
+            ImGui::Text("15"); ImGui::NextColumn();
+            ImGui::Text("16"); ImGui::NextColumn();
+            ImGui::Text("17"); ImGui::NextColumn();
+            ImGui::Text("18"); ImGui::NextColumn();
+            ImGui::End();
         }
 
         // 2. Show another simple window, this time using an explicit Begin/End pair
-        if (show_another_window)
         {
-            ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
-            ImGui::Begin("Another Window", &show_another_window);
-            ImGui::Text("Hello");
+            ImGuiWindowFlags window_flags = 0;
+            window_flags |= ImGuiWindowFlags_NoTitleBar;
+            window_flags |= ImGuiWindowFlags_NoScrollbar;
+            window_flags |= ImGuiWindowFlags_NoCollapse;
+            window_flags |= ImGuiWindowFlags_NoResize;
+            window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
+            ImGui::SetNextWindowSize(ImVec2(0,0), ImGuiSetCond_FirstUseEver);
+            ImGui::Begin("SHMBoy", &show_another_window, window_flags);
+            ImGui::Image( (void *) logoTextureId, ImVec2(160*scale, 144*scale), ImVec2(0,0), ImVec2(1,1),
+                         ImColor(255,255,255,255), ImColor(255,255,255,128));
             ImGui::End();
         }
 
@@ -94,6 +146,7 @@ int main(int, char**)
     }
 
     // Cleanup
+    SDL_FreeSurface(logo);
     ImGui_ImplSdl_Shutdown();
     SDL_GL_DeleteContext(glcontext);
     SDL_DestroyWindow(window);
