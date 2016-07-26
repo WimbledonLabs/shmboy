@@ -39,7 +39,7 @@ void Cpu::reset() {
     mem.set(SCX,  0);
     mem.set(LYC,  0);
     mem.set(WY,   0);
-    mem.set(WX,    0);
+    mem.set(WX,   0);
     mem.set(IE,   0);// DI; //TODO DI = disable interrupt instruction
 
     mem.set(IF, 0); // needed? - SHM
@@ -48,8 +48,7 @@ void Cpu::reset() {
 }
 
 Cpu::Cpu() {
-    ppu = new Ppu(this,
-                  &mem);
+    ppu = new Ppu(this, &mem);
     reset();
 }
 
@@ -61,6 +60,16 @@ OpCode Cpu::fetch(int pc) {
 
 }
 
+u8 Cpu::fetchImm8(int pc) {
+
+}
+
+u16 Cpu::fetchImm16(int pc) {
+
+}
+
 void Cpu::execute(OpCode op) {
-//TODO #include "gb_decode_switch.c"
+    u8 imm8 = fetchImm8(pc+1);
+    u16 imm16 = fetchImm16(pc+1);
+    #include "opcodeExecSwitch.c"
 }

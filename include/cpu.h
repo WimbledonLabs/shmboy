@@ -34,14 +34,25 @@ class Cpu {
 public:
     u16 sp;
     u16 pc;
+    u8 EI = 0;
 
     u8 reg[REGISTER_COUNT];
+    u16 *regPair;
 
     GbMemory mem;
     Ppu *ppu;
 
     Cpu();
     ~Cpu();
+
+    // Micro-op helper instructions
+    bool flag(u8 f);
+    bool stop();
+    bool checkHalt(u8 op);
+    u8 bcd();
+    u8 alu(u8 *dest, u8 *src, u8 aluOp);
+    u8 rot(u8 *dest, u8 dir, u8 modifyFlags);
+    void cb();
 
     void reset();
     OpCode fetch(int pc);
