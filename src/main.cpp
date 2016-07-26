@@ -72,9 +72,8 @@ int main(int, char**)
         }
         ImGui_ImplSdl_NewFrame(window);
 
-        // 1. Show a simple window
         // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
-        {
+        { // Show debug window
             static float f = 0.0f;
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::Text("Game Boy Screen Scale");
@@ -82,41 +81,72 @@ int main(int, char**)
             ImGui::RadioButton("x2", &scale, 2); ImGui::SameLine();
             ImGui::RadioButton("x3", &scale, 3); ImGui::SameLine();
             ImGui::RadioButton("x4", &scale, 4);
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-            ImGui::ColorEdit3("clear color", (float*)&clear_color);
-            if (ImGui::Button("Test Window")) show_test_window ^= 1;
-            if (ImGui::Button("Another Window")) show_another_window ^= 1;
         }
 
         {
-            ImGui::SetNextWindowSize(ImVec2(450,300), ImGuiSetCond_FirstUseEver);
-            ImGui::Begin("Disassembly", nullptr);
-            ImGui::Columns(3, "mycolumns3", true); // 3 columns, no border
-            ImGui::Separator();
-            ImGui::Text("One"); ImGui::NextColumn();
-            ImGui::Text("2"); ImGui::NextColumn();
-            ImGui::Text("3"); ImGui::NextColumn();
-            ImGui::Text("4"); ImGui::NextColumn();
-            ImGui::Text("5"); ImGui::NextColumn();
-            ImGui::Text("6"); ImGui::NextColumn();
-            ImGui::Text("7"); ImGui::NextColumn();
-            ImGui::Text("8"); ImGui::NextColumn();
-            ImGui::Text("9"); ImGui::NextColumn();
-            ImGui::Text("10"); ImGui::NextColumn();
-            ImGui::Text("11"); ImGui::NextColumn();
-            ImGui::Text("12"); ImGui::NextColumn();
-            ImGui::Text("13"); ImGui::NextColumn();
-            ImGui::Text("14"); ImGui::NextColumn();
-            ImGui::Text("15"); ImGui::NextColumn();
-            ImGui::Text("16"); ImGui::NextColumn();
-            ImGui::Text("17"); ImGui::NextColumn();
-            ImGui::Text("18"); ImGui::NextColumn();
+            ImGui::Begin("CPU Status", nullptr);
+            ImGui::Text("AF: 00 33");
+            ImGui::Text("BC: 00 00");
+            ImGui::Text("DE: 00 00");
+            ImGui::Text("HL: 00 00");
+            ImGui::Text("SP: 01 40");
+            ImGui::Text("PC: 01 40");
+            ImGui::Text(" ");
+            ImGui::Text("imm16: 8F 04");
+
             ImGui::End();
         }
 
-        // 2. Show another simple window, this time using an explicit Begin/End pair
-        {
+        { // Show disassembly window
+            ImGuiWindowFlags window_flags = 0;
+            // window_flags |= ImGuiWindowFlags_NoScrollbar;
+            // window_flags |= ImGuiWindowFlags_NoResize;
+            // window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
+
+            //ImGui::SetNextWindowSizeConstraints(ImVec2(-1, 0),    ImVec2(-1, FLT_MAX));      // Vertical only
+
+            ImGui::SetNextWindowSize(ImVec2(200,300), ImGuiSetCond_FirstUseEver);
+            ImGui::Begin("Disassembly", nullptr, window_flags);
+            ImGui::BeginChild("item view", ImVec2(0, -(1.0*ImGui::GetItemsLineHeightWithSpacing()))); { // Leave room for 1 line below us 
+                ImGui::Text("0x0000 NOP");
+                ImGui::Text("0x0001 JP 0x000F");
+                ImGui::Text("0x0002 LD (BC), A");
+                ImGui::Text("0x0003 ADD A, #45");
+                ImGui::TreeNodeEx("0x0004 PUSH DE", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+                ImGui::Text("0x0005 INC DE");
+                ImGui::Text("0x0006 DEC BC");
+                ImGui::Text("0x0007 EI");
+                ImGui::Text("0x0008 LD A, ($0xFF00 + C)");
+                ImGui::Text("0x0009 SBC A, D");
+                ImGui::Text("0x000a CALL NZ, 0x0002");
+                ImGui::Text("0x000b POP DE");
+                ImGui::Text("0x000c HALT");
+                ImGui::Text("0x000d NOP");
+                ImGui::Text("0x000e NOP");
+                ImGui::Text("0x000f NOP");
+                ImGui::Text("0x0010 NOP");
+                ImGui::Text("0x0011 NOP");
+                ImGui::Text("0x0012 NOP");
+                ImGui::Text("0x0013 NOP");
+                ImGui::Text("0x0014 NOP");
+                ImGui::Text("0x0015 NOP");
+                ImGui::Text("0x0016 NOP");
+            } ImGui::EndChild();
+            ImGui::Separator();
+
+            if (ImGui::Button("Step")) {
+                // Step through assembly code
+            }
+            ImGui::SameLine();
+            static char buf1[64] = ""; ImGui::InputText("", buf1, 64);
+
+            ImGui::End();
+        }
+
+        { // Show emulator screen texture
+            ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+            ImGui::PushStyleVar( ImGuiStyleVar_WindowRounding, 0.0f);
+
             ImGuiWindowFlags window_flags = 0;
             window_flags |= ImGuiWindowFlags_NoTitleBar;
             window_flags |= ImGuiWindowFlags_NoScrollbar;
@@ -128,9 +158,12 @@ int main(int, char**)
             ImGui::Image( (void *) logoTextureId, ImVec2(160*scale, 144*scale), ImVec2(0,0), ImVec2(1,1),
                          ImColor(255,255,255,255), ImColor(255,255,255,128));
             ImGui::End();
+
+            ImGui::PopStyleVar();
+            ImGui::PopStyleVar();
         }
 
-        // 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
+        // Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
         if (show_test_window)
         {
             ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);

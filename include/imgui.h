@@ -245,6 +245,10 @@ namespace ImGui
     // Widgets
     IMGUI_API void          Text(const char* fmt, ...) IM_PRINTFARGS(1);
     IMGUI_API void          TextV(const char* fmt, va_list args);
+
+    // The following two by SHM
+    IMGUI_API void          TextHighlight(const ImVec4& col, const char* fmt, ...) IM_PRINTFARGS(2);
+    IMGUI_API void          TextHighlightV(const ImVec4& col, const char* fmt, va_list args);
     IMGUI_API void          TextColored(const ImVec4& col, const char* fmt, ...) IM_PRINTFARGS(2);  // shortcut for PushStyleColor(ImGuiCol_Text, col); Text(fmt, ...); PopStyleColor();
     IMGUI_API void          TextColoredV(const ImVec4& col, const char* fmt, va_list args);
     IMGUI_API void          TextDisabled(const char* fmt, ...) IM_PRINTFARGS(1);                    // shortcut for PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]); Text(fmt, ...); PopStyleColor();

@@ -5250,6 +5250,24 @@ void ImGui::TextColored(const ImVec4& col, const char* fmt, ...)
     va_end(args);
 }
 
+void ImGui::TextHighlightV(const ImVec4& col, const char* fmt, va_list args)
+{
+    //PushStyleColor(ImGuiCol_FrameBg, col);
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Framed;
+
+    //TreeNodeExV("##dummy", flags, fmt, args);
+
+    //PopStyleColor();
+}
+
+void ImGui::TextHighlight(const ImVec4& col, const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    TextHighlightV(col, fmt, args);
+    va_end(args);
+}
+
 void ImGui::TextDisabledV(const char* fmt, va_list args)
 {
     PushStyleColor(ImGuiCol_Text, GImGui->Style.Colors[ImGuiCol_TextDisabled]);
