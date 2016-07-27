@@ -8,7 +8,8 @@ TARGET := bin/template
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name "*.$(SRCEXT)")
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -g -std=c++11 # -Wall
+IGNORE_WARNINGS := #-Wint-to-pointer-cast -Wunused-variable -Wreturn-type
+CFLAGS := -g -std=c++11 $(IGNORE_WARNINGS) # -Wall
 LIB := -L lib -lSDL2 -lGL
 INC := -I include
 

@@ -3,12 +3,16 @@
 
 #include <imgui.h>
 #include "imgui_impl_sdl.h"
-#include <stdio.h>
+#include <cstdio>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 #include <iostream>
 
+#include "shmboy_common.h"
 #include "shm_emu_io.h"
+#include "cpu.h"
+
+#include "opcodeDisassembleSwitch.c"
 
 int main(int, char**)
 {
@@ -105,32 +109,20 @@ int main(int, char**)
 
             //ImGui::SetNextWindowSizeConstraints(ImVec2(-1, 0),    ImVec2(-1, FLT_MAX));      // Vertical only
 
+            char buf[64] = {0};
+            OpCode op;
+            op.value = 0;
+
             ImGui::SetNextWindowSize(ImVec2(200,300), ImGuiSetCond_FirstUseEver);
             ImGui::Begin("Disassembly", nullptr, window_flags);
             ImGui::BeginChild("item view", ImVec2(0, -(1.0*ImGui::GetItemsLineHeightWithSpacing()))); { // Leave room for 1 line below us 
-                ImGui::Text("0x0000 NOP");
-                ImGui::Text("0x0001 JP 0x000F");
-                ImGui::Text("0x0002 LD (BC), A");
-                ImGui::Text("0x0003 ADD A, #45");
+                for (int i=0; i<256; i++) {
+                    ImGui::Text("0x%04x", op.value);
+                    disassembleOpCode(buf, op, 0xDD, 0xFACE);
+                    op.value++;
+                    ImGui::SameLine(); ImGui::Text(buf);
+                }
                 ImGui::TreeNodeEx("0x0004 PUSH DE", ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-                ImGui::Text("0x0005 INC DE");
-                ImGui::Text("0x0006 DEC BC");
-                ImGui::Text("0x0007 EI");
-                ImGui::Text("0x0008 LD A, ($0xFF00 + C)");
-                ImGui::Text("0x0009 SBC A, D");
-                ImGui::Text("0x000a CALL NZ, 0x0002");
-                ImGui::Text("0x000b POP DE");
-                ImGui::Text("0x000c HALT");
-                ImGui::Text("0x000d NOP");
-                ImGui::Text("0x000e NOP");
-                ImGui::Text("0x000f NOP");
-                ImGui::Text("0x0010 NOP");
-                ImGui::Text("0x0011 NOP");
-                ImGui::Text("0x0012 NOP");
-                ImGui::Text("0x0013 NOP");
-                ImGui::Text("0x0014 NOP");
-                ImGui::Text("0x0015 NOP");
-                ImGui::Text("0x0016 NOP");
             } ImGui::EndChild();
             ImGui::Separator();
 

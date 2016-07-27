@@ -1,6 +1,6 @@
 import csv
 from pprint import pprint
-from string import Template
+from string import Template, Formatter
 from decoderGenerator import getDecodeTree, getSwitch
 from subprocess import call
 
@@ -37,16 +37,51 @@ def genCode(tree):
 
 def genDisassemble(tree):
     d = {
-        "ALU": "ALU",
-        "R": "R",
-        "r": "r",
-        "D": "D",
-        "D2": "D",
-        "F": "F",
-        "N": "N",
-        "RST": "RST",
+        "ALU_OP": "%s",
+        "lR": "%s",
+        "dR": "%s",
+        "sR": "%s",
+        "d1": "%s",
+        "d2": "%s",
+        "dir": "%s",
+        "carry": "%s",
+        "F": "%s",
+        "imm8": "0x%02x",
+        "imm16": "0x%04x",
     }
-    return "std::cout << \"%s\" << std::endl;" % Template(opCodes[tree][1]).substitute(d)
+
+    mapToFunc = {
+        "ALU_OP": "getAluSymbol(op.alu)",
+        "lR": "getLightRSymbol(op.R)",
+        "dR": "getDarkRSymbol(op.R)",
+        "sR": "getSmallRSymbol(op.sR)",
+        "d1": "getTheDSymbol(op.d1)",
+        "d2": "getTheDSymbol(op.d2)",
+        "dir": "(op.dir) ? \"R\" : \"L\"",
+        "carry": "(op.nC) ? \"\" : \"C\"",
+        "F": "getFlagSymbol(op.F)",
+        "imm8": "imm8",
+        "imm16": "imm16",
+    }
+
+    out = "sprintf(buf, \"%s\"%s);" % (Template(opCodes[tree][0]).substitute(d), \
+            "".join([ ", %s" % mapToFunc[x[1]] for x in Formatter().parse(opCodes[tree][0]) if x[1] ]) )
+
+    if "${imm8}" in opCodes[tree][0]:
+        return out + " return 2;"
+
+    if "${imm16}" in opCodes[tree][0]:
+        return out + " return 3;"
+
+    return out + " return 1;"
+
+def defFromDict(name, d):
+    print """const char* get%sSymbol (u16 value) {
+    switch (value) {
+%s
+        default: return "XXX";
+    }
+}""" % ( name[0].upper() + name[1:], "\n".join(["        case %s: return \"%s\";" % t for t in d.iteritems()]) )
 
 if __name__ == "__main__":
     call("libreoffice --headless --convert-to csv cgb_microcode.ods", shell=True)
@@ -73,4 +108,68 @@ if __name__ == "__main__":
     from microcode import opCodes
 
     decodeTree = getDecodeTree(opCodes, wildcard, ignore)
-    print getSwitch(genCode, "/*Default*/", decodeTree, 0)
+
+    d = {
+        0b000: "B",
+        0b001: "C",
+        0b010: "D",
+        0b011: "E",
+        0b100: "H",
+        0b101: "L",
+        0b110: "(HL)",
+        0b111: "A",
+    }
+
+    sR = {
+        0: "BC",
+        1: "DE",
+    }
+
+    lR = {
+        0b00: "BC",
+        0b01: "DE",
+        0b10: "HL",
+        0b11: "SP",
+    }
+
+    dR = {
+        0b00: "BC",
+        0b01: "DE",
+        0b10: "HL",
+        0b11: "AF",
+    }
+
+    f = {
+        0b00: "NZ",
+        0b01: "Z",
+        0b10: "NC",
+        0b11: "C",
+    }
+
+    direction = {
+        0: "L",
+        1: "R",
+    }
+
+    alu = {
+        0b000: "ADD",
+        0b001: "ADC",
+        0b010: "SUB",
+        0b011: "SBC",
+        0b100: "AND",
+        0b101: "XOR",
+        0b110: "OR",
+        0b111: "CP",
+    }
+
+    defFromDict("darkR", dR)
+    defFromDict("smallR", sR)
+    defFromDict("lightR", lR)
+    defFromDict("flag", f)
+    defFromDict("dir", direction)
+    defFromDict("theD", d)
+    defFromDict("alu", alu)
+
+    print "int disassembleOpCode(char* buf, OpCode op, u8 imm8, u16 imm16) {\n\t",
+    print getSwitch(genDisassemble, "/*Default*/", decodeTree, 1)
+    print "}"

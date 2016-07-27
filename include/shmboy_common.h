@@ -11,9 +11,4 @@ typedef enum {
     DMG_MODE,
     CGB_MODE,
 } GbMode;
-
-
-typedef union {
-    u8 value;
-} OpCode;
 #endif //SHMBOY_COMMON_H

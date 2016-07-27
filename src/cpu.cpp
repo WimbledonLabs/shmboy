@@ -28,6 +28,10 @@ u8& GbMemory::loc(int index) {
     }
 }
 
+u8& GbMemory::operator[](u16 index) {
+    return loc(index);
+}
+
 void Cpu::reset() {
     mem.set(P1,   0);
     mem.set(SC,   0);
@@ -57,15 +61,51 @@ Cpu::~Cpu() {
 }
 
 OpCode Cpu::fetch(int pc) {
-
+    // TODO
 }
 
 u8 Cpu::fetchImm8(int pc) {
-
+    // TODO
 }
 
 u16 Cpu::fetchImm16(int pc) {
+    // TODO
+}
 
+bool Cpu::flag(u8 f) {
+    // TODO
+}
+
+bool Cpu::stop() {
+    // TODO
+}
+
+bool Cpu::checkHalt(u8 op) {
+    // TODO
+}
+
+void Cpu::halt() {
+    // TODO
+}
+
+u8 Cpu::bcd(u8) {
+    // TODO
+}
+
+u8 Cpu::alu(u8 dest, u8 src, u8 aluOp) {
+    // TODO
+}
+
+u8 Cpu::rot(u8 dest, u8 dir, u8 modifyFlags) {
+    // TODO
+}
+
+void Cpu::rst() {
+    // TODO
+}
+
+void Cpu::cb() {
+    // TODO
 }
 
 void Cpu::execute(OpCode op) {

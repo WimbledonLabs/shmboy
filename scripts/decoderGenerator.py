@@ -201,9 +201,9 @@ def getSwitch(gen, default, tree, tabdepth, base=2):
         opCodeSlices.add(subsequence)
         out += "switch (op.digit%s_%s) {\n" % subsequence
         for key, value in items:
-            out += tabs + "case 0x%s: " % format(int(key[subsequence[0]:subsequence[1]+1], base), 'x').upper()
+            out += tabs + "case 0x%s: {" % format(int(key[subsequence[0]:subsequence[1]+1], base), 'x').upper()
             out += getSwitch( gen, default, tree[key], tabdepth+1, base )
-            out += " break;\n"
+            out += "} break;\n"
         out += tabs + "default: %s break;\n%s}" % (default, tabs)
 
     return out
