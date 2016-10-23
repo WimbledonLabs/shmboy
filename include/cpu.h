@@ -2,6 +2,8 @@
 #define CPU_H
 
 #include "shmboy_common.h"
+#include "cart.h"
+#include "mmu.h"
 #include "ppu.h"
 
 #define REGISTER_COUNT 8
@@ -20,19 +22,6 @@
 
 // Forward declarations
 class Ppu;
-
-class GbMemory {
-public:
-    u8 memory[MEMORY_SIZE];
-    u8 displayRamBank1[DISPLAY_RAM_BANK_SIZE];
-    u8 get(int index);
-    void set(int index, u8 value);
-
-    u8& loc(int index);
-    void zeroAllMemory();
-
-    u8 &operator[](u16 loc);
-};
 
 typedef union {
     u8 value;
@@ -114,11 +103,14 @@ public:
     u8 reg[REGISTER_COUNT];
     u16 *regPair;
 
-    GbMemory mem;
+    Mmu mem;
     Ppu *ppu;
 
     Cpu();
     ~Cpu();
+
+    void step();
+    void loadCart(Cartridge *cart);
 
     // Micro-op helper instructions
     bool flag(u8 f);
@@ -135,7 +127,7 @@ public:
     OpCode fetch(int pc);
     u8 fetchImm8(int pc);
     u16 fetchImm16(int pc);
-    void execute(OpCode op);
+    void execute(OpCode op, u8 imm8, u16 imm16);
 };
 
 

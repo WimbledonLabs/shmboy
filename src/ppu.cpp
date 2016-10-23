@@ -11,10 +11,10 @@ u32 Ppu::getPixelColor(ChrData chr, int x, int y) {
     return 0; // TODO    
 }
 
-Ppu::Ppu(Cpu *cpu, GbMemory *mem) {
+Ppu::Ppu(Cpu *cpu, Mmu *mem) {
     this->cpu = cpu;
     this->mem = mem;
-    bank0 = &(mem->memory[DISPLAY_RAM_START]);
+    bank0 = &((*mem)[DISPLAY_RAM_START]);
     bank1 = mem->displayRamBank1;
 }
 

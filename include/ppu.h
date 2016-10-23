@@ -20,7 +20,6 @@
 
 // Forward declarations
 class Cpu;
-class GbMemory;
 
 typedef union {
     u8 value;
@@ -44,12 +43,12 @@ typedef struct {
 class Ppu {
 public:
     Ppu(Cpu      *cpu,
-        GbMemory *mem);
+        Mmu *mem);
 
     ~Ppu();
 
     Cpu *cpu;
-    GbMemory *mem;
+    Mmu *mem;
 
     u8 *bank0;
     u8 *bank1;

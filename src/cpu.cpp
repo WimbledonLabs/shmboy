@@ -1,37 +1,5 @@
 #include "cpu.h"
 
-void GbMemory::zeroAllMemory() {
-    for (int i=0; i < MEMORY_SIZE; i++) {
-        memory[i] = 0;
-    }
-}
-
-void GbMemory::set(int index, u8 value) {
-    loc(index) = value;
-}
-
-u8 GbMemory::get(int index) {
-    return loc(index);
-}
-
-u8& GbMemory::loc(int index) {
-    if ( DISPLAY_RAM_START <= index && index <= DISPLAY_RAM_STOP) {
-        if (get(VBK)) {
-            return displayRamBank1[index-DISPLAY_RAM_START];
-        } else {
-            return memory[index];
-        }
-    } else if (false) {
-        return memory[0];
-    } else {
-        return memory[index];
-    }
-}
-
-u8& GbMemory::operator[](u16 index) {
-    return loc(index);
-}
-
 void Cpu::reset() {
     mem.set(P1,   0);
     mem.set(SC,   0);
@@ -49,6 +17,9 @@ void Cpu::reset() {
     mem.set(IF, 0); // needed? - SHM
 
     mem.set(VBK, 0); // CGB only, do anyways
+
+    pc = 0x100;
+    sp = 0xDEAD; //TODO is it zero, or does it count the other way?
 }
 
 Cpu::Cpu() {
@@ -56,20 +27,34 @@ Cpu::Cpu() {
     reset();
 }
 
+void Cpu::loadCart(Cartridge *cart) {
+    mem.loadCart(cart);
+}
+
 Cpu::~Cpu() {
     delete ppu;
 }
 
 OpCode Cpu::fetch(int pc) {
-    // TODO
+    OpCode op;
+    op.value = mem[pc];
+    return op;
 }
 
 u8 Cpu::fetchImm8(int pc) {
-    // TODO
+    return mem[pc+1];
 }
 
 u16 Cpu::fetchImm16(int pc) {
-    // TODO
+    return mem.get16(pc+1);
+}
+
+void Cpu::step() {
+    OpCode op = fetch(pc);
+    u8 imm8 = fetchImm8(pc);
+    u16 imm16 = fetchImm16(pc);
+    pc++; // TODO increment more for multi-byte instructions
+    execute(op, imm8, imm16);
 }
 
 bool Cpu::flag(u8 f) {
@@ -108,8 +93,6 @@ void Cpu::cb() {
     // TODO
 }
 
-void Cpu::execute(OpCode op) {
-    u8 imm8 = fetchImm8(pc+1);
-    u16 imm16 = fetchImm16(pc+1);
+void Cpu::execute(OpCode op, u8 imm8, u16 imm16) {
     #include "opcodeExecSwitch.c"
 }

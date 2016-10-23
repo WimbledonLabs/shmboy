@@ -19,6 +19,7 @@
 
 #define CGB_SWITCHABLE_BANK 0xD000
 
+#define HIGH_RAM_START 0xFF00
 #define STACK_RAM 0xFF80
 
 //==============================================================================

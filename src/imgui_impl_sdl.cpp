@@ -1,9 +1,16 @@
 // ImGui SDL2 binding with OpenGL
-// In this binding, ImTextureID is used to store an OpenGL 'GLuint' texture identifier. Read the FAQ about ImTextureID in imgui.cpp.
+// In this binding, ImTextureID is used to store an OpenGL 'GLuint' texture
+// identifier. Read the FAQ about ImTextureID in imgui.cpp.
 
-// You can copy and use unmodified imgui_impl_* files in your project. See main.cpp for an example of using this.
-// If you use this binding you'll need to call 4 functions: ImGui_ImplXXXX_Init(), ImGui_ImplXXXX_NewFrame(), ImGui::Render() and ImGui_ImplXXXX_Shutdown().
-// If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
+// You can copy and use unmodified imgui_impl_* files in your project. See
+// main.cpp for an example of using this.
+// If you use this binding you'll need to call 4 functions:
+//   - ImGui_ImplXXXX_Init()
+//   - ImGui_ImplXXXX_NewFrame()
+//   - ImGui::Render()
+//   - ImGui_ImplXXXX_Shutdown()
+// If you are new to ImGui, see examples/README.txt and documentation at the
+// top of imgui.cpp.
 // https://github.com/ocornut/imgui
 
 #include <SDL2/SDL.h>
@@ -19,12 +26,15 @@ static bool         g_MousePressed[3] = { false, false, false };
 static float        g_MouseWheel = 0.0f;
 static GLuint       g_FontTexture = 0;
 
-// This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
+// This is the main rendering function that you have to implement and provide to
+// ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 // If text or lines are blurry when integrating ImGui in your engine:
-// - in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
+// - in your Render function, try translating your projection matrix by
+//   (0.5f,0.5f) or (0.375f,0.375f)
 void ImGui_ImplSdl_RenderDrawLists(ImDrawData* draw_data)
 {
-    // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
+    // Avoid rendering when minimized, scale coordinates for retina displays
+    // (screen coordinates != framebuffer coordinates)
     ImGuiIO& io = ImGui::GetIO();
     int fb_width = (int)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
     int fb_height = (int)(io.DisplaySize.y * io.DisplayFramebufferScale.y);
@@ -32,8 +42,9 @@ void ImGui_ImplSdl_RenderDrawLists(ImDrawData* draw_data)
         return;
     draw_data->ScaleClipRects(io.DisplayFramebufferScale);
 
-    // We are using the OpenGL fixed pipeline to make the example code simpler to read!
-    // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, vertex/texcoord/color pointers.
+    // We are using the OpenGL fixed pipeline to make the example code simpler
+    // Setup render state: alpha-blending enabled, no face culling, no depth
+    // testing, scissor enabled, vertex/texcoord/color pointers.
     GLint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
     GLint last_viewport[4]; glGetIntegerv(GL_VIEWPORT, last_viewport);
     glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT);
@@ -177,7 +188,7 @@ bool ImGui_ImplSdl_CreateDeviceObjects()
     return true;
 }
 
-void    ImGui_ImplSdl_InvalidateDeviceObjects()
+void ImGui_ImplSdl_InvalidateDeviceObjects()
 {
     if (g_FontTexture)
     {
@@ -187,10 +198,12 @@ void    ImGui_ImplSdl_InvalidateDeviceObjects()
     }
 }
 
-bool    ImGui_ImplSdl_Init(SDL_Window* window)
+bool ImGui_ImplSdl_Init(SDL_Window* window)
 {
     ImGuiIO& io = ImGui::GetIO();
-    io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
+    // Keyboard mapping. ImGui will use those indices to peek into the
+    // io.KeyDown[] array.
+    io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
     io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
     io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
@@ -245,26 +258,36 @@ void ImGui_ImplSdl_NewFrame(SDL_Window *window)
     SDL_GetWindowSize(window, &w, &h);
     SDL_GL_GetDrawableSize(window, &display_w, &display_h);
     io.DisplaySize = ImVec2((float)w, (float)h);
-    io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
+    io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0,
+                                        h > 0 ? ((float)display_h / h) : 0);
 
     // Setup time step
     Uint32	time = SDL_GetTicks();
     double current_time = time / 1000.0;
-    io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f/60.0f);
+    io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) :
+                                  (float)(1.0f/60.0f);
     g_Time = current_time;
 
     // Setup inputs
-    // (we already got mouse wheel, keyboard keys & characters from SDL_PollEvent())
+    // (we already got mouse wheel, keyboard keys & characters from
+    // SDL_PollEvent())
     int mx, my;
     Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_FOCUS)
-        io.MousePos = ImVec2((float)mx, (float)my);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
+        // Mouse position, in pixels (set to -1,-1 if no mouse / on another
+        // screen, etc.)
+        io.MousePos = ImVec2((float)mx, (float)my);
     else
         io.MousePos = ImVec2(-1,-1);
 
-    io.MouseDown[0] = g_MousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;		// If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-    io.MouseDown[1] = g_MousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-    io.MouseDown[2] = g_MousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
+    // If a mouse press event came, always pass it as "mouse held this frame",
+    // so we don't miss click-release events that are shorter than 1 frame.
+    io.MouseDown[0] =
+        g_MousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+    io.MouseDown[1] =
+        g_MousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
+    io.MouseDown[2] =
+        g_MousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
     g_MousePressed[0] = g_MousePressed[1] = g_MousePressed[2] = false;
 
     io.MouseWheel = g_MouseWheel;
